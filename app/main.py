@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from app.api.routes import health
+from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging, get_logger
@@ -19,7 +19,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title=settings.app_name, version=settings.version)
     register_middleware(app)
     register_exception_handlers(app)
-    app.include_router(health.router)
+    app.include_router(api_router)
 
     get_logger(__name__).info("Application initialised (environment=%s)", settings.environment)
     return app
