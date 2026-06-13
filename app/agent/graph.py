@@ -39,5 +39,9 @@ def build_agent() -> CompiledStateGraph[Any, Any, Any, Any]:
         model_name=settings.openai_model,
         temperature=settings.agent_temperature,
         max_tokens=settings.agent_max_tokens,
+        # ``api_key`` is langchain's documented alias for the ``openai_api_key``
+        # field; the pydantic mypy plugin only sees the field name, so this is a
+        # false positive.
+        api_key=settings.openai_api_key,  # type: ignore[call-arg]
     )
     return create_react_agent(model, TOOLS, prompt=SYSTEM_PROMPT)

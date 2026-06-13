@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,8 +18,9 @@ class Settings(BaseSettings):
     environment: str = "development"
 
     # LLM / agent configuration.
-    # The OpenAI API key is read by langchain from the OPENAI_API_KEY
-    # environment variable directly (no APP_ prefix).
+    # The API key is read from the standard OPENAI_API_KEY env var (no APP_
+    # prefix); everything else uses the APP_ prefix.
+    openai_api_key: str | None = Field(default=None, validation_alias="OPENAI_API_KEY")
     openai_model: str = "gpt-4o-mini"
     agent_temperature: float = 0.0
     agent_max_tokens: int = 1024
