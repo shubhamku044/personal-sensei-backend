@@ -17,11 +17,14 @@ class Settings(BaseSettings):
     environment: str = "development"
 
     # LLM / agent configuration.
-    # The Anthropic API key is read by langchain from the ANTHROPIC_API_KEY
+    # The OpenAI API key is read by langchain from the OPENAI_API_KEY
     # environment variable directly (no APP_ prefix).
-    anthropic_model: str = "claude-sonnet-4-6"
+    openai_model: str = "gpt-4o-mini"
     agent_temperature: float = 0.0
     agent_max_tokens: int = 1024
+
+    # Comma-separated list of origins allowed to call the API (CORS).
+    cors_allow_origins: list[str] = ["http://localhost:3000"]
 
 
 @lru_cache

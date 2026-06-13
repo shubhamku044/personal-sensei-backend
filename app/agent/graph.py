@@ -1,8 +1,9 @@
 """LangGraph agent definition.
 
-Builds a ReAct-style agent (LangGraph's prebuilt graph) backed by Claude and
-the tools declared in ``app.agent.tools``. The graph is constructed lazily and
-cached so that importing this module never requires an API key.
+Builds a ReAct-style agent (LangGraph's prebuilt graph) backed by an OpenAI
+chat model and the tools declared in ``app.agent.tools``. The graph is
+constructed lazily and cached so that importing this module never requires an
+API key.
 """
 
 from __future__ import annotations
@@ -10,7 +11,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
-from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 
 from app.agent.tools import TOOLS
@@ -30,12 +31,12 @@ SYSTEM_PROMPT = (
 def build_agent() -> CompiledStateGraph[Any, Any, Any, Any]:
     """Build and cache the tutor agent graph.
 
-    Reads model configuration from settings. The ``ANTHROPIC_API_KEY``
+    Reads model configuration from settings. The ``OPENAI_API_KEY``
     environment variable must be set for the underlying model to authenticate.
     """
     settings = get_settings()
-    model = ChatAnthropic(
-        model=settings.anthropic_model,
+    model = ChatOpenAI(
+        model_name=settings.openai_model,
         temperature=settings.agent_temperature,
         max_tokens=settings.agent_max_tokens,
     )
