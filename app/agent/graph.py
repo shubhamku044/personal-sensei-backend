@@ -1,9 +1,9 @@
 """LangGraph agent definition.
 
-Builds a ReAct-style agent (LangGraph's prebuilt graph) backed by an OpenAI
-chat model and the tools declared in ``app.agent.tools``. The graph is
-constructed lazily and cached so that importing this module never requires an
-API key.
+Builds a tool-calling agent (via ``langchain.agents.create_agent``, which
+compiles to a LangGraph graph) backed by an OpenAI chat model and the tools
+declared in ``app.agent.tools``. The graph is constructed lazily and cached so
+that importing this module never requires an API key.
 """
 
 from __future__ import annotations
@@ -11,8 +11,8 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any
 
+from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
-from langgraph.prebuilt import create_react_agent
 
 from app.agent.tools import TOOLS
 from app.core.config import get_settings
@@ -44,4 +44,4 @@ def build_agent() -> CompiledStateGraph[Any, Any, Any, Any]:
         # false positive.
         api_key=settings.openai_api_key,  # type: ignore[call-arg]
     )
-    return create_react_agent(model, TOOLS, prompt=SYSTEM_PROMPT)
+    return create_agent(model, TOOLS, system_prompt=SYSTEM_PROMPT)
