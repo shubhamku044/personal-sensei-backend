@@ -62,22 +62,33 @@ app/
 
 ### Agent (LangChain + LangGraph)
 
-A ReAct-style agent backed by an OpenAI chat model lives in `app/agent/`:
+A tool-calling agent backed by an OpenAI chat model lives in `app/agent/`:
 
 - `tools.py` — tools the model can call (`@tool`-decorated functions in `TOOLS`).
-- `graph.py` — `build_agent()` constructs and caches a LangGraph
-  `create_react_agent` graph using the model from settings.
+- `graph.py` — `build_agent()` constructs and caches a `langchain.agents`
+  `create_agent` graph with an `InMemorySaver` checkpointer for memory.
 
-The service layer drives it — see `TutorService.ask()` in
-`app/services/tutor_service.py`, exposed over HTTP at `POST /api/v1/chat`. The
-agent is built lazily, so importing the modules never requires credentials; set
-`OPENAI_API_KEY` to actually invoke it.
+The service layer drives it — see `TutorService` in
+`app/services/tutor_service.py`. The agent is built lazily, so importing the
+modules never requires credentials; set `OPENAI_API_KEY` to actually invoke it.
+
+**Memory:** every request carries a `thread_id`; reuse it across messages and
+the agent remembers the conversation (state lives in the checkpointer).
 
 ```bash
+# Full reply
 curl -X POST http://127.0.0.1:8000/api/v1/chat \
   -H 'content-type: application/json' \
-  -d '{"message":"Teach me about binary search."}'
+  -d '{"message":"Teach me about binary search.","thread_id":"abc"}'
 # {"reply":"..."}
+
+# Streamed reply (Server-Sent Events)
+curl -N -X POST http://127.0.0.1:8000/api/v1/chat/stream \
+  -H 'content-type: application/json' \
+  -d '{"message":"Teach me about binary search.","thread_id":"abc"}'
+# data: {"type":"token","content":"Binary"}
+# data: {"type":"token","content":" search"}
+# data: {"type":"done"}
 ```
 
 ### Errors

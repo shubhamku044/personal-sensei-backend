@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import InMemorySaver
 
 from app.agent.tools import TOOLS
 from app.core.config import get_settings
@@ -36,12 +37,15 @@ def build_agent() -> CompiledStateGraph[Any, Any, Any, Any]:
     """
     settings = get_settings()
     model = ChatOpenAI(
-        model_name=settings.openai_model,
+        model=settings.openai_model,
         temperature=settings.agent_temperature,
         max_tokens=settings.agent_max_tokens,
-        # ``api_key`` is langchain's documented alias for the ``openai_api_key``
-        # field; the pydantic mypy plugin only sees the field name, so this is a
-        # false positive.
-        api_key=settings.openai_api_key,  # type: ignore[call-arg]
+        api_key=settings.openai_api_key,
     )
-    return create_agent(model, TOOLS, system_prompt=SYSTEM_PROMPT)
+
+    return create_agent(
+        model,
+        TOOLS,
+        system_prompt=SYSTEM_PROMPT,
+        checkpointer=InMemorySaver(),
+    )
