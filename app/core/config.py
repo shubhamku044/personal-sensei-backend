@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     version: str = "0.1.0"
     environment: str = "development"
 
+    # LLM / agent configuration.
+    # The Anthropic API key is read by langchain from the ANTHROPIC_API_KEY
+    # environment variable directly (no APP_ prefix).
+    anthropic_model: str = "claude-sonnet-4-6"
+    agent_temperature: float = 0.0
+    agent_max_tokens: int = 1024
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -29,9 +29,11 @@ The API is served at http://127.0.0.1:8000 — interactive docs at `/docs`.
 ### Health check
 
 ```bash
-curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/api/v1/health
 # {"status":"ok","app":"Personal Sensei API","version":"0.1.0","environment":"development"}
 ```
+
+All routes are mounted under `/api/v1` (see `app/api/router.py`).
 
 ## Quality tooling ("no mercy")
 
@@ -49,12 +51,26 @@ Service-layered. Cross-cutting concerns live in `app/core/`:
 
 ```
 app/
-├── api/routes/      # HTTP layer — thin; parses requests, calls services
+├── api/
+│   ├── router.py    # versioned aggregator — mounts everything under /api/v1
+│   └── routes/      # HTTP layer — thin; parses requests, calls services
 ├── services/        # business logic; raises app.core.errors.* on failure
 ├── repositories/    # persistence / data access
-├── agent/           # LLM agent + tools
+├── agent/           # LangChain/LangGraph agent + tools
 └── core/            # config, logging, errors, middleware (cross-cutting)
 ```
+
+### Agent (LangChain + LangGraph)
+
+A ReAct-style agent backed by Claude lives in `app/agent/`:
+
+- `tools.py` — tools the model can call (`@tool`-decorated functions in `TOOLS`).
+- `graph.py` — `build_agent()` constructs and caches a LangGraph
+  `create_react_agent` graph using the model from settings.
+
+The service layer drives it — see `TutorService.ask()` in
+`app/services/tutor_service.py`. The agent is built lazily, so importing the
+modules never requires credentials; set `ANTHROPIC_API_KEY` to actually invoke it.
 
 ### Errors
 
